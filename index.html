@@ -3,9 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker</title>
+    <link rel="icon" href="./assets/icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Expense.io - Home</title>
 </head>
 <body>
-    
+    <div>
+        <nav class="navbar">
+            <div class="logo"><span>Expense.io</span></div>      
+            <button class="btn btn-open">Add Expense</button>
+        </nav>
+
+        <div class="container">
+            <div class="add-info">
+                <div class="home-page">
+                    <div class="dashboard">
+                        <div class="cards">
+                            <div class="food-card">
+                                <h4>Food</h4>
+                                <h3 id="food-total"></h3>
+                            </div>
+                            <div class="entertainment-card">
+                                <h4>Entertainment</h4>
+                                <h3 id="entertainment-total"></h3>
+                            </div>
+                            <div class="bill-card">
+                                <h4>Bill & Payments</h4>
+                                <h3 id="bill-total"></h3>
+                            </div>
+                        </div>
+                        <div class="main-chart">
+                            <div class="chart">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="expense-list">
+                        <div class="expense-header">
+                            <div class="total-expense">
+                                <span class="total-expense-title">Total: </span>
+                                <span id="total-expense"></span>
+                            </div>
+                            <div class="expense-searchbar">
+                                <input type="text" id="search-input" placeholder="Search..." onkeyup="searchExpenses()">
+                            </div>
+                        </div>
+                        <div class="expense-tracker-list">
+                        </div>
+                    </div>
+                </div>
+                <div class="overlay hidden"></div>
+            </div>
+        </div>
+
+        <div class="modal-section">
+            <section class="modal hidden">
+                <div class="flex">
+                  <div></div>
+                  <button class="btn-close" onclick="clearInputFields()">⨉</button>
+                </div>
+                <div>
+                  <h2 id="modal-label" class="modal-label">Add Expense</h2>
+                </div>
+              <div class="user-input">
+
+                  <input id="expenseDescription" type="text" placeholder="description" autocomplete="off" ></input>
+                  <span id="error-description"></span>
+                  
+                  <input id="expenseAmount" type="number" min="1" oninput="validity.valid||(value='');" placeholder="amount" autocomplete="off"/>
+                  <span id="error-amount"></span>
+
+                  <input id="spendDate" type="date" placeholder=" Description" autocomplete="off"/>
+                  <span id="error-date"></span>
+                  
+                  <div class="categories-list">
+                      <label><b>Select Categories</b></label>
+                        <select name="categories" id="categories">
+                            <option value="Food">Food</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Bill & Payments">Bill & Payments</option>
+                        </select>
+                    <span id="error-categories"></span>
+                  </div>
+                  <button class="btn" onclick="addExpense()" id="saveButton">Create</button>
+              </div>
+              </section>
+        </div>
+
+    <script src="index.js"></script>
 </body>
 </html>
