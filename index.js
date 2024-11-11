@@ -2,6 +2,8 @@ const modal = document.querySelector(".modal");
 const overlay = document.querySelector(".overlay");
 const openModalBtn = document.querySelector(".btn-open");
 const closeModalBtn = document.querySelector(".btn-close");
+let currentPage = 1;
+const itemsPerPage = 6;
 
 const closeModal = function () {
   modal.classList.add("hidden");
@@ -24,9 +26,17 @@ const openModal = function () {
 
 openModalBtn.addEventListener("click", openModal);
 
+const formatAmount = (amount) => {
+  if (amount >= 1e3) {
+    return (amount / 1e3).toFixed(1) + "k";
+  } else {
+    return amount.toString();
+  }
+};
+
 const addExpense = () => {
   const expenseDescription =
-    document.getElementById("expenseDescription").value;
+  document.getElementById("expenseDescription").value;
   const expenseAmount = document.getElementById("expenseAmount").value;
   const spendDate = document.getElementById("spendDate").value;
   const categories = document.getElementById("categories").value;
@@ -95,9 +105,21 @@ const clearInputFields = () => {
   document.getElementById("modal-label").innerHTML = "Add Expense";
 };
 
-const getAlldata = (searchExpenses = "") => {
+const getAlldata = (searchExpenses = "", sort = "") => {
   let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
+  if(sort === true) {
+    expenses.sort(function(a, b) {
+      return a.amount - b.amount
+  })
+  }
+
+  if(sort === false) {
+    expenses.sort(function(a, b) {
+      return b.amount - a.amount
+  })
+  }
+  
   if (searchExpenses) {
     expenses = expenses.filter((exp) => {
       return (
@@ -106,14 +128,28 @@ const getAlldata = (searchExpenses = "") => {
         exp.amount.toString().includes(searchExpenses)
       );
     });
-  } 
+  }
+
+  const totalPages = Math.ceil(expenses.length / itemsPerPage);
+
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const paginatedExpenses = expenses.slice(start, end);
 
   const expenseTracker = document.querySelector(".expense-tracker-list");
   expenseTracker.innerHTML = `
       <table class="table">
           <tr class="head">
-            <th class="table-description">Description</th>
-            <th class="table-amount">Amount</th>
+            <th class="table-description">Title</th>
+            <th class="table-amount">Amount
+              <img style="
+                width: 10px;
+                margin-left: 10px;
+                cursor: pointer;
+                class="sort-img" src="assets/sort.png"
+                onclick="sortAmount()"
+              >
+            </th>
             <th class="table-date">Date</th>
             <th class="table-categories">Categories</th>
             <th>Actions</th>
@@ -123,9 +159,8 @@ const getAlldata = (searchExpenses = "") => {
 
   const table = expenseTracker.querySelector(".table");
 
-  expenses.forEach((exp, idx) => {
+  paginatedExpenses.forEach((exp, idx) => {
     const row = document.createElement("tr");
-    // console.log("exp.description ", exp.description);
 
     row.innerHTML = `
       <td class="description-list">${exp.description}</td>
@@ -143,35 +178,62 @@ const getAlldata = (searchExpenses = "") => {
     `;
     table.appendChild(row);
   });
+  updateMonthlyChart()
+  getCardDetails();
+  updatePagination(totalPages);
+};
+
+const updatePagination = (totalPages) => {
+  const paginationControls = document.querySelector(".pagination-div");
+  paginationControls.innerHTML = `
+    <button class="prev-button" onclick="changePage('prev')" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
+    <span class="page-data">Page ${currentPage} of ${totalPages}</span>
+    <button class="prev-button" onclick="changePage('next')" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+  `;
+};
+
+const changePage = (direction) => {
+  
+  if (direction === "next") {
+    currentPage++;
+  } else if (direction === "prev" && currentPage > 1) {
+    currentPage--;
+  }
+  getAlldata();
+};
+
+const getCardDetails = () => {
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
   let totalExpense = 0;
   totalExpense = expenses.reduce((total, exp) => {
     return total + parseFloat(exp.amount);
   }, 0);
 
-  document.getElementById("total-expense").innerHTML = `$${totalExpense}`;
+  document.getElementById("total-expense").innerHTML = `$${formatAmount(totalExpense)}`;
 
   let categoryWiseTotal = {};
-
+  
   expenses.forEach((exp) => {
     if (!categoryWiseTotal[exp.categories]) {
       categoryWiseTotal[exp.categories] = 0;
     }
     categoryWiseTotal[exp.categories] += parseFloat(exp.amount);
-  });
+  });  
 
   document.getElementById("food-total").innerHTML = `$${
-    categoryWiseTotal["Food"] || 0
+    formatAmount(categoryWiseTotal["Food"]) || 0
   }`;
 
   document.getElementById("entertainment-total").innerHTML = `$${
-    categoryWiseTotal["Entertainment"] || 0
+    formatAmount(categoryWiseTotal["Entertainment"]) || 0
   }`;
 
   document.getElementById("bill-total").innerHTML = `$${
-    categoryWiseTotal["Bill & Payments"] || 0
+    formatAmount(categoryWiseTotal["Bill & Payments"]) || 0
   }`;
-};
+
+}
 
 const editExpenseInfo = (idx) => {
   openModal();
@@ -199,6 +261,7 @@ const editExpenseInfo = (idx) => {
     closeModal();
     clearInputFields();
     getAlldata();
+    getCardDetails();
   };
 };
 
@@ -219,27 +282,92 @@ const searchExpenses = () => {
   getAlldata(searchExpenses);
 };
 
-getAlldata();
+const sortExpenses = () => {
+  const searchExpenses = document
+    .getElementById("filter-categories")
+    .value.toLowerCase();
+  getAlldata(searchExpenses);
+};
 
-const ctx = document.getElementById("pieChart");
+const sortAmount = () => {
+  let flag = JSON.parse(localStorage.getItem("flag")) || false
+  getAlldata(undefined, !flag);
+  localStorage.setItem("flag", JSON.stringify(!flag));
+}
 
-new Chart(ctx, {
+const getMonthlyExpenseData = () => {
+  const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  const monthlyData = {};
+
+  expenses.forEach((expense) => {
+    const month = new Date(expense.date).toLocaleString("default", {
+      month: "short",
+      year: "numeric",
+    });
+
+    if (!monthlyData[month]) {
+      monthlyData[month] = 0;
+    }
+
+    monthlyData[month] += parseFloat(expense.amount);
+  });
+
+  const labels = Object.keys(monthlyData);
+  const data = Object.values(monthlyData);
+
+  return { labels, data };
+};
+
+const updateMonthlyChart = () => {
+  const { labels, data } = getMonthlyExpenseData();
+
+  monthlyExpenseChart.data.labels = labels;
+  monthlyExpenseChart.data.datasets[0].data = data;
+  monthlyExpenseChart.update();
+};
+
+const ctx = document.getElementById("monthlyExpenseChart");
+
+const monthlyExpenseChart = new Chart(ctx, {
   type: "bar",
   data: {
-    labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+    labels: [],
     datasets: [
       {
-        label: "# of Votes",
-        data: [12, 19, 3, 5, 2, 3],
+        label: "Monthly Expenses",
+        data: [],
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
       },
     ],
   },
   options: {
+    responsive: true,
     scales: {
       y: {
         beginAtZero: true,
+        title: {
+          display: true,
+          text: "Total Expenses",
+        },
+      },
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: "Month Expenses",
+        },
       },
     },
   },
 });
+
+getAlldata();
+
+const mainGetAlldata = getAlldata;
+
+getAlldata = (...args) => {
+  mainGetAlldata(...args);
+  updateMonthlyChart();
+};
