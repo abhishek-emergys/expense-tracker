@@ -68,13 +68,12 @@ textarea {
 }
 
 .navbar button {
-  margin-right: 50px;
+  margin-right: 30px;
 }
 
 .container {
   width: 95%;
   margin: 0 auto;
-  padding: 1rem 0;
   height: 100%;
 }
 
@@ -192,8 +191,8 @@ button {
 
 .filter-list select {
   width: 12vw;
-  height: 6vh;
-  padding: 10px;
+  height: 5vh;
+  padding: 5px;
   margin-left: 10px;
 }
 
@@ -247,7 +246,7 @@ button {
   display: flex;
   flex-direction: column;
   width: 44%;
-  gap: 50px;
+  /* gap: 50px; */
 }
 
 .home-page {
@@ -262,8 +261,8 @@ button {
 
 .cards {
   width: 100%;
-  padding: 10px 10px;
-  height: 140px;
+  padding-top: 10px;
+  height: 87px;
   display: flex;
   gap: 10px;
 }
@@ -275,11 +274,12 @@ button {
   background-color: #EDF2F7;
   border-radius: 10px;
   text-align: center;
-  padding: 20px;
+  padding: 10px;
   align-items: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  height: 10vh;
 }
 
 .food-card h4, .entertainment-card h4, .bill-card h4 {
@@ -293,27 +293,61 @@ button {
 }
 
 .main-chart {
-  width: 100%;
-  border-radius: 10px;
-  height: 370px;
-  background-color: #EDF2F7;
+  /* width: 100%; */
+  border-radius: 10px 10px 10px 10px;
+  /* height: 370px; */
+  /* height: 240px; */
+  background-color: #EDF2F7
+}
+
+.table-list {
+  height: 64vh;
 }
 
 .head {
   border-radius: 10px;
 }
 
-.expense-header {
+canvas {
+    height: 240px;
+    width: 460px;
+}
+
+canvas.monthly-expenseChart {
+  padding: 10px;
+  height: 249px !important;
+  width: 100% !important;
+  background-color: #EDF2F7;
+  border-radius: 10px 10px 10px 10px;
+}
+
+/* .expense-header {
   display: flex;
   justify-content: space-between;
   padding: 10px;
+} */
+
+.expense-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #EDF2F7;
+  height: 10vh;
+  margin-top: 10px;
+  border-radius: 10px;
+  padding: 10px;
+  margin-left: 10px;
+  justify-content: space-between;
+  margin-left: 10px;
+  text-align: center;
+  align-items: center;
+  gap: 20px;
 }
 
 .expense-tracker-list {
   padding: 0px 10px;
-  margin: 10px;
-  height: 34vw;
-  overflow-y: scroll;
+  margin: 10px 0px 0px 10px;
+  height: 39vw;
   background-color: #EDF2F7;
   border-radius: 10px;
 }
@@ -435,12 +469,13 @@ tbody > tr:hover {
 }
 
 #total-expense {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .total-expense {
-  margin-top: 10px;
+  /* margin-top: 10px; */
+  min-width: 120px;
 }
 
 .expense-searchbar {
@@ -476,13 +511,13 @@ text-overflow: ellipsis;
 }
 
 #food-total, #entertainment-total, #bill-total {
-max-width: 120px;
 white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis;
 }
 
 .pagination-div {
+  padding: 20px;
   width: auto;
   height: 4.5vh;
   margin: 0px 10px;
@@ -492,6 +527,7 @@ text-overflow: ellipsis;
 
 .prev-button {
   display: inline-block;
+  width: 100px;
   padding: 10px;
   font-weight: 900;
   background-color: #1a202c;
