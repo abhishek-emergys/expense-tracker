@@ -431,6 +431,7 @@ tbody > tr:hover {
 
 .total-expense-title {
   font-size: 18px;
+  width: 160px;
 }
 
 #total-expense {
@@ -503,4 +504,29 @@ text-overflow: ellipsis;
 .page-data {
   font-size: medium;
   margin: 20px;
+}
+
+.edit-btn {
+  background-color: #EDF2F7;
+  color: white;
+  width: 40px;
+  border-radius: 10px;
+  height: 30px;
+}
+
+.edit-btn:hover {
+  background-color: #007bff;
+}
+
+.btns {
+  text-align: center;
+  justify-content: center;
+}
+
+.delete-btn {
+  background-color: #EDF2F7;
+  color: white;
+  width: 40px;
+  border-radius: 10px;
+  height: 30px;
 }

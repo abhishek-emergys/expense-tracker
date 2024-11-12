@@ -2,8 +2,9 @@ const modal = document.querySelector(".modal");
 const overlay = document.querySelector(".overlay");
 const openModalBtn = document.querySelector(".btn-open");
 const closeModalBtn = document.querySelector(".btn-close");
+
 let currentPage = 1;
-const itemsPerPage = 6;
+const itemsPerPage = 5;
 
 const closeModal = function () {
   clearInputFields();
@@ -90,6 +91,7 @@ const addExpense = () => {
     let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
     expenses.push(expenseData);
     localStorage.setItem("expenses", JSON.stringify(expenses));
+    alert(`${expenseData.description} Added successfully!!!!`);
   }
 
   clearInputFields();
@@ -105,7 +107,7 @@ const clearInputFields = () => {
   document.getElementById("modal-label").innerHTML = "Add Expense";
 };
 
-const getAlldata = (searchExpenses = "", sort = "") => {
+const getAlldata = (searchExpenses = "", sort = "", selectedCategory = "") => {
   let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
   if (sort === true) {
@@ -128,6 +130,10 @@ const getAlldata = (searchExpenses = "", sort = "") => {
         exp.amount.toString().includes(searchExpenses)
       );
     });
+  }
+
+  if (selectedCategory) {
+    expenses = expenses.filter((exp) => exp.categories === selectedCategory);
   }
 
   const totalPages = Math.ceil(expenses.length / itemsPerPage);
@@ -167,9 +173,9 @@ const getAlldata = (searchExpenses = "", sort = "") => {
       <td class="amount-list">$${exp.amount}</td>
       <td class="date-list">${exp.date}</td>
       <td class="categories-list">${exp.categories}</td>
-      <td>
+      <td class="btns">
         <button class="edit-btn" onclick="editExpenseInfo(${exp.id})">
-          <img class="img" src="./assets/editing.png" alt="Edit">
+           <img class="img" src="./assets/editing.png" alt="Edit">
         </button>
         <button class="delete-btn" onclick="deleteExpense(${exp.id})">
           <img class="img" src="./assets/delete.png" alt="Delete">
@@ -178,9 +184,21 @@ const getAlldata = (searchExpenses = "", sort = "") => {
     `;
     table.appendChild(row);
   });
-  updateMonthlyChart();
+
+  updateMonthlyChart(expenses);
   getCardDetails();
   updatePagination(totalPages);
+  updateCategoryTotal(expenses);
+};
+
+const updateCategoryTotal = (filteredExpenses) => {
+  const totalAmount = filteredExpenses.reduce(
+    (total, expense) => total + parseFloat(expense.amount),
+    0
+  );
+  document.getElementById("total-expense").innerHTML = `$${formatAmount(
+    totalAmount
+  )}`;
 };
 
 const updatePagination = (totalPages) => {
@@ -202,12 +220,23 @@ const changePage = (direction) => {
   } else if (direction === "prev" && currentPage > 1) {
     currentPage--;
   }
-  getAlldata();
+
+  const selectedCategory = document.getElementById("filter-categories").value;
+
+  // getAlldata();
+  getAlldata(
+    undefined,
+    JSON.parse(localStorage.getItem("flag")),
+    selectedCategory
+  );
 };
 
 const getCardDetails = () => {
+  // console.log("logger");
+  
   let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-
+  // console.log("expenses ", expenses);
+  
   let totalExpense = 0;
   totalExpense = expenses.reduce((total, exp) => {
     return total + parseFloat(exp.amount);
@@ -226,17 +255,28 @@ const getCardDetails = () => {
     categoryWiseTotal[exp.categories] += parseFloat(exp.amount);
   });
 
-  document.getElementById("food-total").innerHTML = `$${
-    formatAmount(categoryWiseTotal["Food"]) || 0
-  }`;
+  // console.log("categoryWiseTotal ", categoryWiseTotal["Bill & Payments"]);
 
-  document.getElementById("entertainment-total").innerHTML = `$${
-    formatAmount(categoryWiseTotal["Entertainment"]) || 0
-  }`;
+  if(categoryWiseTotal) {
 
-  document.getElementById("bill-total").innerHTML = `$${
-    formatAmount(categoryWiseTotal["Bill & Payments"]) || 0
-  }`;
+    if(categoryWiseTotal['Food']) {
+        document.getElementById("food-total").innerHTML = `$${formatAmount(categoryWiseTotal['Food'])}`;
+      } else {
+        document.getElementById("food-total").innerHTML = `$0`;
+      }
+
+    if(categoryWiseTotal['Entertainment']) {
+        document.getElementById("entertainment-total").innerHTML = `$${formatAmount(categoryWiseTotal['Entertainment'])}`;
+      } else {
+        document.getElementById("entertainment-total").innerHTML = `$0`;
+      }
+
+    if(categoryWiseTotal['Bill & Payments']) {
+        document.getElementById("bill-total").innerHTML = `$${formatAmount(categoryWiseTotal['Bill & Payments'])}`;
+      } else {
+        document.getElementById("bill-total").innerHTML = `$0`;
+      }
+  }
 };
 
 const editExpenseInfo = (id) => {
@@ -256,12 +296,15 @@ const editExpenseInfo = (id) => {
     expense.amount = document.getElementById("expenseAmount").value;
     expense.date = document.getElementById("spendDate").value;
     expense.categories = document.getElementById("categories").value;
-
+    
+    const selectedCategory = document.getElementById("filter-categories").value;
+  
+    alert(`${expense.description} updated successfully!!!!`)
     localStorage.setItem("expenses", JSON.stringify(expenses));
 
     closeModal();
     clearInputFields();
-    getAlldata();
+    getAlldata(undefined, undefined, selectedCategory);
     getCardDetails();
   };
 };
@@ -278,30 +321,37 @@ const deleteExpense = (id) => {
 };
 
 const searchExpenses = () => {
-  const searchExpenses = document
-    .getElementById("search-input")
-    .value.toLowerCase();
-  getAlldata(searchExpenses);
+  const searchExpenses = document.getElementById("search-input").value.toLowerCase();
+
+  const selectedCategory = document.getElementById("filter-categories").value;
+
+  getAlldata(searchExpenses, undefined, selectedCategory);
 };
 
-const sortExpenses = () => {
+const sortCategories = () => {
   const searchExpenses = document
     .getElementById("filter-categories")
     .value.toLowerCase();
+
+  document.getElementById('search-input').value = ""
   getAlldata(searchExpenses);
+  updateMonthlyChart()
 };
 
 const sortAmount = () => {
   let flag = JSON.parse(localStorage.getItem("flag")) || false;
-  getAlldata(undefined, !flag);
+
+  const selectedCategory = document.getElementById("filter-categories").value;
+
+  getAlldata(undefined, !flag, selectedCategory);
+
   localStorage.setItem("flag", JSON.stringify(!flag));
 };
 
-const getMonthlyExpenseData = () => {
-  const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+const getMonthlyExpenseData = (filteredExpenses) => {
   const monthlyData = {};
 
-  expenses.forEach((expense) => {
+  filteredExpenses.forEach((expense) => {
     const month = new Date(expense.date).toLocaleString("default", {
       month: "short",
       year: "numeric",
@@ -320,8 +370,9 @@ const getMonthlyExpenseData = () => {
   return { labels, data };
 };
 
-const updateMonthlyChart = () => {
-  const { labels, data } = getMonthlyExpenseData();
+const updateMonthlyChart = (filteredExpenses) => {
+  
+  const { labels, data } = getMonthlyExpenseData(filteredExpenses);
 
   monthlyExpenseChart.data.labels = labels;
   monthlyExpenseChart.data.datasets[0].data = data;
@@ -366,7 +417,7 @@ const monthlyExpenseChart = new Chart(ctx, {
 });
 
 getAlldata();
-
+getCardDetails();
 const mainGetAlldata = getAlldata;
 
 getAlldata = (...args) => {
