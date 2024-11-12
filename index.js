@@ -6,6 +6,7 @@ let currentPage = 1;
 const itemsPerPage = 6;
 
 const closeModal = function () {
+  clearInputFields();
   modal.classList.add("hidden");
   overlay.classList.add("hidden");
 };
@@ -36,7 +37,7 @@ const formatAmount = (amount) => {
 
 const addExpense = () => {
   const expenseDescription =
-  document.getElementById("expenseDescription").value;
+    document.getElementById("expenseDescription").value;
   const expenseAmount = document.getElementById("expenseAmount").value;
   const spendDate = document.getElementById("spendDate").value;
   const categories = document.getElementById("categories").value;
@@ -48,7 +49,6 @@ const addExpense = () => {
   if (expenseDescription.length < 1) {
     document.getElementById("error-description").innerHTML =
       "Please enter description";
-    return false;
   } else {
     document.getElementById("error-description").innerHTML = "";
   }
@@ -60,7 +60,6 @@ const addExpense = () => {
 
   if (expenseAmount.length <= 0) {
     document.getElementById("error-amount").innerHTML = "Please enter amount";
-    return false;
   } else {
     document.getElementById("error-amount").innerHTML = "";
   }
@@ -80,6 +79,7 @@ const addExpense = () => {
   }
 
   const expenseData = {
+    id: Date.now(),
     description: expenseDescription.trim(),
     amount: expenseAmount,
     date: spendDate,
@@ -108,18 +108,18 @@ const clearInputFields = () => {
 const getAlldata = (searchExpenses = "", sort = "") => {
   let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-  if(sort === true) {
-    expenses.sort(function(a, b) {
-      return a.amount - b.amount
-  })
+  if (sort === true) {
+    expenses.sort(function (a, b) {
+      return a.amount - b.amount;
+    });
   }
 
-  if(sort === false) {
-    expenses.sort(function(a, b) {
-      return b.amount - a.amount
-  })
+  if (sort === false) {
+    expenses.sort(function (a, b) {
+      return b.amount - a.amount;
+    });
   }
-  
+
   if (searchExpenses) {
     expenses = expenses.filter((exp) => {
       return (
@@ -168,17 +168,17 @@ const getAlldata = (searchExpenses = "", sort = "") => {
       <td class="date-list">${exp.date}</td>
       <td class="categories-list">${exp.categories}</td>
       <td>
-        <button class="edit-btn" onclick="editExpenseInfo(${idx})">
+        <button class="edit-btn" onclick="editExpenseInfo(${exp.id})">
           <img class="img" src="./assets/editing.png" alt="Edit">
         </button>
-        <button class="delete-btn" onclick="deleteExpense(${idx})">
+        <button class="delete-btn" onclick="deleteExpense(${exp.id})">
           <img class="img" src="./assets/delete.png" alt="Delete">
         </button>
       </td>
     `;
     table.appendChild(row);
   });
-  updateMonthlyChart()
+  updateMonthlyChart();
   getCardDetails();
   updatePagination(totalPages);
 };
@@ -186,14 +186,17 @@ const getAlldata = (searchExpenses = "", sort = "") => {
 const updatePagination = (totalPages) => {
   const paginationControls = document.querySelector(".pagination-div");
   paginationControls.innerHTML = `
-    <button class="prev-button" onclick="changePage('prev')" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
+    <button class="prev-button" onclick="changePage('prev')" ${
+      currentPage === 1 ? "disabled" : ""
+    }>Previous</button>
     <span class="page-data">Page ${currentPage} of ${totalPages}</span>
-    <button class="prev-button" onclick="changePage('next')" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+    <button class="prev-button" onclick="changePage('next')" ${
+      currentPage === totalPages ? "disabled" : ""
+    }>Next</button>
   `;
 };
 
 const changePage = (direction) => {
-  
   if (direction === "next") {
     currentPage++;
   } else if (direction === "prev" && currentPage > 1) {
@@ -210,16 +213,18 @@ const getCardDetails = () => {
     return total + parseFloat(exp.amount);
   }, 0);
 
-  document.getElementById("total-expense").innerHTML = `$${formatAmount(totalExpense)}`;
+  document.getElementById("total-expense").innerHTML = `$${formatAmount(
+    totalExpense
+  )}`;
 
   let categoryWiseTotal = {};
-  
+
   expenses.forEach((exp) => {
     if (!categoryWiseTotal[exp.categories]) {
       categoryWiseTotal[exp.categories] = 0;
     }
     categoryWiseTotal[exp.categories] += parseFloat(exp.amount);
-  });  
+  });
 
   document.getElementById("food-total").innerHTML = `$${
     formatAmount(categoryWiseTotal["Food"]) || 0
@@ -232,22 +237,19 @@ const getCardDetails = () => {
   document.getElementById("bill-total").innerHTML = `$${
     formatAmount(categoryWiseTotal["Bill & Payments"]) || 0
   }`;
+};
 
-}
-
-const editExpenseInfo = (idx) => {
+const editExpenseInfo = (id) => {
   openModal();
   document.getElementById("modal-label").innerHTML = "Edit Expense";
 
   const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-  const expense = expenses[idx];
+  const expense = expenses.find((exp) => exp.id === id);
 
   document.getElementById("expenseDescription").value = expense.description;
   document.getElementById("expenseAmount").value = expense.amount;
   document.getElementById("spendDate").value = expense.date;
   document.getElementById("categories").value = expense.categories;
-
-  document.getElementById("saveButton").onclick = null;
 
   document.getElementById("saveButton").onclick = function () {
     expense.description = document.getElementById("expenseDescription").value;
@@ -255,7 +257,6 @@ const editExpenseInfo = (idx) => {
     expense.date = document.getElementById("spendDate").value;
     expense.categories = document.getElementById("categories").value;
 
-    expenses[idx] = expense;
     localStorage.setItem("expenses", JSON.stringify(expenses));
 
     closeModal();
@@ -265,12 +266,13 @@ const editExpenseInfo = (idx) => {
   };
 };
 
-const deleteExpense = (idx) => {
+const deleteExpense = (id) => {
   if (confirm("Do you want to delete expense!!!")) {
-    const expense = JSON.parse(localStorage.getItem("expenses")) || [];
+    const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-    expense.splice(idx, 1);
-    localStorage.setItem("expenses", JSON.stringify(expense));
+    Updatedexpenses = expenses.filter((exp) => exp.id !== id);
+
+    localStorage.setItem("expenses", JSON.stringify(Updatedexpenses));
     getAlldata();
   }
 };
@@ -290,10 +292,10 @@ const sortExpenses = () => {
 };
 
 const sortAmount = () => {
-  let flag = JSON.parse(localStorage.getItem("flag")) || false
+  let flag = JSON.parse(localStorage.getItem("flag")) || false;
   getAlldata(undefined, !flag);
   localStorage.setItem("flag", JSON.stringify(!flag));
-}
+};
 
 const getMonthlyExpenseData = () => {
   const expenses = JSON.parse(localStorage.getItem("expenses")) || [];

@@ -379,7 +379,7 @@ table {
 td,
 th {
   border-bottom: none;
-  padding: 20px;
+  padding: 20px 10px;
 }
 
 th {
