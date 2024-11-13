@@ -36,6 +36,23 @@ const formatAmount = (amount) => {
   }
 };
 
+const toastMessage = (msg) => {
+  Toastify({
+    text: msg,
+    duration: 3000,
+    destination: "https://github.com/apvarun/toastify-js",
+    newWindow: true,
+    close: true,
+    gravity: "top",
+    position: "center",
+    stopOnFocus: true,
+    style: {
+      background: "linear-gradient(to right, #00b09b, #96c93d)",
+    },
+    onClick: function(){}
+  }).showToast();
+}
+
 const addExpense = () => {
 
   document.getElementById('editButton').style.display = "none"
@@ -50,16 +67,14 @@ const addExpense = () => {
 
   const validRegex = regex.test(expenseDescription);
 
-  if (expenseDescription.length < 1) {
+  if(!validRegex && expenseDescription.length !== 0) {
     document.getElementById("error-description").innerHTML =
-      "Please enter description";
+      "Invalid title";
+  } else if(expenseDescription.length === 0) {
+    document.getElementById("error-description").innerHTML =
+      "Please enter title";
   } else {
     document.getElementById("error-description").innerHTML = "";
-  }
-
-  if (!validRegex) {
-    document.getElementById("error-description").innerHTML =
-      "Invalid description";
   }
 
   if (expenseAmount.length <= 0) {
@@ -90,16 +105,18 @@ const addExpense = () => {
     categories: categories,
   };
 
-  if (validRegex) {
+  if (validRegex && expenseAmount.length >= 1) {
+    document.getElementById("search-input").value = ""
+    document.getElementById("filter-categories").value = ""
     let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
     expenses.push(expenseData);
     localStorage.setItem("expenses", JSON.stringify(expenses));
-    alert(`${expenseData.description} Added successfully!!!!`);
+    toastMessage(`${expenseData.description} Added successfully!!!!`);
+    clearInputFields();
+    closeModal();
+    getAlldata();
   }
 
-  clearInputFields();
-  closeModal();
-  getAlldata();
 };
 
 const clearInputFields = () => {
@@ -122,6 +139,20 @@ const clearInputFields = () => {
 const getAlldata = (searchExpenses = "", sort = "", selectedCategory = "") => {
   let imageUrl = "assets/sort.png";
   let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  
+  document.getElementById('main-chart-no-data-found').style.display = "none"
+  if(expenses.length === 0) {
+  console.log("expenses ", expenses.length === 0);
+    document.getElementById('error-page').style.display = "flex";
+    document.getElementById('main-chart').style.display = 'none';
+    document.getElementById('expense-tracker-list').style.display = 'none';
+    getCardDetails();
+    return
+  }
+
+    document.getElementById('error-page').style.display = "none";
+    document.getElementById('main-chart').style.display = 'block';
+    document.getElementById('expense-tracker-list').style.display = 'block';
 
   let sortOrder = sort || JSON.parse(localStorage.getItem("flag")) || "";
 
@@ -148,9 +179,9 @@ const getAlldata = (searchExpenses = "", sort = "", selectedCategory = "") => {
       );
     });
   }
-
+ 
   if (selectedCategory) {
-    expenses = expenses.filter((exp) => exp.categories === selectedCategory);
+    expenses = expenses.filter((exp) => exp.categories === selectedCategory);    
   }
 
   let totalPages = Math.ceil(expenses.length / itemsPerPage);
@@ -169,7 +200,7 @@ const getAlldata = (searchExpenses = "", sort = "", selectedCategory = "") => {
           <tr class="head">
             <th class="table-description">Title</th>
             <th class="table-amount">Amount
-              <img style="
+              <img id="sort-id" style="
                 width: 10px;
                 margin-left: 10px;
                 cursor: pointer;
@@ -182,8 +213,9 @@ const getAlldata = (searchExpenses = "", sort = "", selectedCategory = "") => {
             <th>Actions</th>
           </tr>
       </table>
+      <div><p id="list-data-error" class="list-data-error">No data found</p></div>
       </div>
-      <div class="pagination-div"></div>
+      <div class="pagination-div" id="pagination-div"></div>
     `;
 
   const table = expenseTracker.querySelector(".table");
@@ -207,6 +239,16 @@ const getAlldata = (searchExpenses = "", sort = "", selectedCategory = "") => {
     `;
     table.appendChild(row);
   });
+
+  if(paginatedExpenses.length === 0) {
+    document.getElementById('list-data-error').style.display = "flex"
+    document.getElementById('main-chart-no-data-found').style.display = "flex"
+    document.getElementById('pagination-div').style.display = "none"
+    document.getElementById('sort-id').style.display = "none"
+    document.getElementById('main-chart').style.display = "none"
+    document.getElementById('total-expense').innerHTML = "$0"
+    return
+  }
 
   updateMonthlyChart(expenses);
   getCardDetails();
@@ -328,7 +370,7 @@ const editExpenseInfo = (id) => {
 
   if (!validRegex) {
     document.getElementById("error-description").innerHTML =
-      "Title required";
+      "Invalid title";
   }
 
   if ((expense.amount).length <= 0) {
@@ -352,10 +394,12 @@ const editExpenseInfo = (id) => {
   }
     const selectedCategory = document.getElementById("filter-categories").value;
   
-    if(validRegex) {
-      alert(`${expense.description} updated successfully!!!!`)
+    if(validRegex && (expense.amount).length >= 1) {
+      toastMessage(`${expense.description} updated successfully!!!!`)
       localStorage.setItem("expenses", JSON.stringify(expenses));
-  
+      document.getElementById("search-input").value = ""
+      document.getElementById("filter-categories").value = ""
+
       closeModal();
       getAlldata(undefined, undefined, selectedCategory);
       getCardDetails();
@@ -369,9 +413,11 @@ const deleteExpense = (id) => {
     const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
     Updatedexpenses = expenses.filter((exp) => exp.id !== id);
-
+    document.getElementById("search-input").value = ""
+    document.getElementById("filter-categories").value = ""
     localStorage.setItem("expenses", JSON.stringify(Updatedexpenses));
     getAlldata();
+    location.reload();
   }
 };
 
@@ -379,15 +425,16 @@ const searchExpenses = () => {
   const searchExpenses = document.getElementById("search-input").value.toLowerCase();
 
   const selectedCategory = document.getElementById("filter-categories").value;
-
+  currentPage = 1
   getAlldata(searchExpenses, undefined, selectedCategory);
 };
 
 const sortCategories = () => {
   const searchExpenses = document
     .getElementById("filter-categories")
-    .value.toLowerCase();
+    .value.toLowerCase();    
 
+  currentPage = 1
   document.getElementById('search-input').value = ""
   getAlldata(searchExpenses);
   updateMonthlyChart()

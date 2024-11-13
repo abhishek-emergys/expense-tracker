@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="./assets/icon.png">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Expense.io - Home</title>
 </head>
@@ -33,11 +35,14 @@
                                 <h3 id="bill-total">$0</h3>
                             </div>
                         </div>
-                        <div class="main-chart">
+                        <div class="main-chart" id="main-chart">
                             <div class="chart-container">
                                 <canvas id="monthlyExpenseChart" class="monthly-expenseChart"></canvas>
                                 <canvas id="monthlyExpenseLineChart" class="monthly-expenseChart"></canvas>
                             </div>
+                        </div>
+                        <div class="main-chart-no-data-found" id="main-chart-no-data-found">
+                            <p>No data found</p>
                         </div>
                     </div>
                     <div class="expense-list">
@@ -60,9 +65,12 @@
                                 <input type="text" id="search-input" placeholder="Search..." style="height: 36px;" onkeyup="searchExpenses()">
                             </div>
                         </div>
-                        <div class="expense-tracker-list">
+                        <div class="expense-tracker-list" id="expense-tracker-list">
                         </div>
                     </div>
+                </div>
+                <div class="error-page" id="error-page">
+                    <p>No data found. Please add expenses to get started.</p>
                 </div>
                 <div class="overlay hidden"></div>
             </div>
@@ -71,12 +79,12 @@
         <div class="modal-section">
             <section class="modal hidden">
                 <div class="flex">
-                  <div></div>
+                    <div>
+                        <h2 id="modal-label" class="modal-label">Add Expense</h2>
+                      </div>
                   <button class="btn-close" onclick="clearInputFields()">⨉</button>
                 </div>
-                <div>
-                  <h2 id="modal-label" class="modal-label">Add Expense</h2>
-                </div>
+                
               <div class="user-input">
 
                   <input id="expenseDescription" type="text" placeholder="title" autocomplete="off" ></input>
@@ -85,7 +93,7 @@
                   <input id="expenseAmount" type="number" min="1" max="1000000" oninput="validity.valid||(value='');" placeholder="amount" autocomplete="off"/>
                   <span id="error-amount"></span>
 
-                  <input id="spendDate" type="date" autocomplete="off"/>
+                  <input id="spendDate" type="date" max="2024-11-13" autocomplete="off"/>
                   <span id="error-date"></span>
                   
                   <div class="categories-list">

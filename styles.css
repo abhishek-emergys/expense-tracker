@@ -61,6 +61,7 @@ textarea {
 
 .modal-label {
   text-align: start;
+  margin-bottom: 20px;
 }
 
 .logo:hover {
@@ -179,7 +180,7 @@ button {
 .user-input {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .filter-list {
@@ -234,6 +235,8 @@ button {
   color: red;
   font-size: small;
   font-weight: 300;
+  text-align: left;
+  padding: 0px 10px;
 }
 
 /* cards */
@@ -565,4 +568,39 @@ text-overflow: ellipsis;
   width: 40px;
   border-radius: 10px;
   height: 30px;
+}
+
+.error-page {
+  display: none;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  background-color: #EDF2F7;
+  height: 74vh;
+  border-radius: 10px;
+  color: #1A202C;
+  font-weight: 500;
+}
+
+.list-data-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+  display: none;
+}
+
+.main-chart-no-data-found {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  height: 75vh;
+  display: none;
+  background-color: #EDF2F7;
+  border-radius: 10px;
+}
+
+.main-chart-no-data-found p {
+  margin-top: 50px;
 }
